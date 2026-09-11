@@ -144,6 +144,10 @@ flowchart TD
 
 https://github.com/diajoyy1111/zeroza
 
+## APK Download Link
+
+https://github.com/diajoyy1111/zeroza/releases/download/v1.0.0/app-release.apk
+
 ---
 
 > **RONG — Nothing is broken. This phone is just RONG.**
