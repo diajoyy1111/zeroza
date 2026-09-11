@@ -1,5 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'app_theme.dart';
+import 'app_widgets.dart';
 
 class TodoScreen extends StatefulWidget {
   const TodoScreen({super.key});
@@ -11,6 +14,7 @@ class TodoScreen extends StatefulWidget {
 class _TodoScreenState extends State<TodoScreen> {
   final List<_TodoItem> _todos = [];
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
   bool _showCompleted = false;
 
   int _restoreCount = 0;
@@ -22,6 +26,7 @@ class _TodoScreenState extends State<TodoScreen> {
   void _addTodo() {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
+    HapticFeedback.lightImpact();
     setState(() {
       _todos.add(_TodoItem(text: text, completed: false));
       _controller.clear();
@@ -29,6 +34,7 @@ class _TodoScreenState extends State<TodoScreen> {
   }
 
   void _deleteTodo(int index) {
+    HapticFeedback.mediumImpact();
     final item = _todos[index];
     final deletedText = item.text;
 
@@ -52,6 +58,7 @@ class _TodoScreenState extends State<TodoScreen> {
   void _toggleTodo(int index) {
     final item = _todos[index];
     if (item.completed) return;
+    HapticFeedback.lightImpact();
 
     setState(() {
       item.completed = true;
@@ -84,16 +91,17 @@ class _TodoScreenState extends State<TodoScreen> {
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF0E0E12) : const Color(0xFFF5F5FA);
-    final cardColor = isDark ? const Color(0xFF1E1E28) : Colors.white;
-    final textColor = isDark ? Colors.white : const Color(0xFF1C1B1F);
-    final inputColor = isDark ? const Color(0xFF1E1E28) : Colors.white;
+    final bgColor = isDark ? AppColors.backgroundDark : AppColors.background;
+    final cardColor = isDark ? AppColors.cardDark : AppColors.card;
+    final textColor = isDark ? AppColors.textDark : AppColors.textPrimary;
+    final inputColor = isDark ? AppColors.cardDark : AppColors.card;
 
     final active = _todos.where((t) => !t.completed).toList();
     final completed = _todos.where((t) => t.completed).toList();
@@ -103,82 +111,69 @@ class _TodoScreenState extends State<TodoScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const Spacer(),
-                  Text(
-                    'To-Do',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      color: textColor,
-                    ),
-                  ),
-                  const Spacer(),
-                  const SizedBox(width: 48),
-                ],
-              ),
-            ),
-            // Restore message
+            const RongScreenTitle(title: 'To-Do'),
             AnimatedOpacity(
               opacity: _showRestoreMessage ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 250),
               child: AnimatedSlide(
-                offset: _showRestoreMessage ? Offset.zero : const Offset(0, -0.3),
-                duration: const Duration(milliseconds: 300),
+                offset: _showRestoreMessage ? Offset.zero : const Offset(0, -0.2),
+                duration: const Duration(milliseconds: 250),
                 child: _showRestoreMessage
                     ? Container(
                         width: double.infinity,
                         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                         decoration: BoxDecoration(
-                          color: Colors.orange[50],
+                          color: isDark ? const Color(0xFF2A1E0E) : const Color(0xFFFFF8EE),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.orange[200]!),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF5A4020) : const Color(0xFFFFE0B2),
+                          ),
                         ),
                         child: Text(
                           _restoreMessage,
-                          style: TextStyle(fontSize: 13, color: Colors.orange[800], fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark ? const Color(0xFFFFB74D) : const Color(0xFFE65100),
+                            fontWeight: FontWeight.w500,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       )
                     : const SizedBox.shrink(),
               ),
             ),
-            // Delete message
             AnimatedOpacity(
               opacity: _showDeleteMessage ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 250),
               child: AnimatedSlide(
-                offset: _showDeleteMessage ? Offset.zero : const Offset(0, -0.3),
-                duration: const Duration(milliseconds: 300),
+                offset: _showDeleteMessage ? Offset.zero : const Offset(0, -0.2),
+                duration: const Duration(milliseconds: 250),
                 child: _showDeleteMessage
                     ? Container(
                         width: double.infinity,
                         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                         decoration: BoxDecoration(
-                          color: Colors.red[50],
+                          color: isDark ? const Color(0xFF2A0E0E) : const Color(0xFFFFF0F0),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.red[200]!),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF5A2020) : const Color(0xFFFFCDD2),
+                          ),
                         ),
                         child: Text(
                           _deleteMessage,
-                          style: TextStyle(fontSize: 13, color: Colors.red[800], fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark ? const Color(0xFFEF5350) : const Color(0xFFC62828),
+                            fontWeight: FontWeight.w500,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       )
                     : const SizedBox.shrink(),
               ),
             ),
-            // Input
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
               child: Row(
@@ -186,39 +181,49 @@ class _TodoScreenState extends State<TodoScreen> {
                   Expanded(
                     child: TextField(
                       controller: _controller,
+                      focusNode: _focusNode,
                       onSubmitted: (_) => _addTodo(),
-                      style: TextStyle(color: textColor),
+                      style: TextStyle(color: textColor, fontSize: 14),
                       decoration: InputDecoration(
                         hintText: 'Add a task...',
-                        hintStyle: TextStyle(color: Colors.grey[500]),
+                        hintStyle: TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: inputColor,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(
+                            color: isDark ? AppColors.borderDark : AppColors.border,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                       ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Material(
-                    color: const Color(0xFF6750A4),
+                    color: AppColors.accent,
                     borderRadius: BorderRadius.circular(14),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(14),
                       onTap: _addTodo,
                       child: const SizedBox(
-                        width: 52,
-                        height: 52,
-                        child: Icon(Icons.add_rounded, color: Colors.white, size: 26),
+                        width: 48,
+                        height: 48,
+                        child: Icon(Icons.add_rounded, color: Colors.white, size: 24),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            // Tabs
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
               child: Row(
@@ -238,13 +243,30 @@ class _TodoScreenState extends State<TodoScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            // List
             Expanded(
               child: (_showCompleted ? completed : active).isEmpty
                   ? Center(
-                      child: Text(
-                        _showCompleted ? 'No completed tasks.' : 'No tasks yet.',
-                        style: TextStyle(color: Colors.grey[500], fontSize: 15),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            _showCompleted ? Icons.check_circle_outline_rounded : Icons.task_alt_rounded,
+                            size: 48,
+                            color: AppColors.textSecondary.withValues(alpha: 0.3),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            _showCompleted ? 'No completed tasks.' : 'No tasks yet.',
+                            style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                          ),
+                          if (!_showCompleted) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              'Add a task to get started',
+                              style: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.6), fontSize: 12),
+                            ),
+                          ],
+                        ],
                       ),
                     )
                   : ListView.builder(
@@ -254,12 +276,29 @@ class _TodoScreenState extends State<TodoScreen> {
                         final list = _showCompleted ? completed : active;
                         final item = list[index];
                         final realIndex = _todos.indexOf(item);
-                        return _TodoTile(
-                          item: item,
-                          cardColor: cardColor,
-                          textColor: textColor,
-                          onToggle: () => _toggleTodo(realIndex),
-                          onDelete: () => _deleteTodo(realIndex),
+                        return Dismissible(
+                          key: ValueKey(item),
+                          direction: DismissDirection.endToStart,
+                          onDismissed: (_) => _deleteTodo(realIndex),
+                          background: Container(
+                            alignment: Alignment.centerRight,
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.only(right: 20),
+                            decoration: BoxDecoration(
+                              color: AppColors.stopwatchIcon,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 20),
+                          ),
+                          child: _TodoTile(
+                            item: item,
+                            cardColor: cardColor,
+                            textColor: textColor,
+                            isDark: isDark,
+                            index: index,
+                            onToggle: () => _toggleTodo(realIndex),
+                            onDelete: () => _deleteTodo(realIndex),
+                          ),
                         );
                       },
                     ),
@@ -282,6 +321,8 @@ class _TodoTile extends StatelessWidget {
   final _TodoItem item;
   final Color cardColor;
   final Color textColor;
+  final bool isDark;
+  final int index;
   final VoidCallback onToggle;
   final VoidCallback onDelete;
 
@@ -289,50 +330,59 @@ class _TodoTile extends StatelessWidget {
     required this.item,
     required this.cardColor,
     required this.textColor,
+    required this.isDark,
+    required this.index,
     required this.onToggle,
     required this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Subtle wrongness: checkbox alignment shifts slightly based on index
+    final checkboxOffset = (index % 3 == 0) ? 2.0 : 0.0;
+
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 250),
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(14),
+        boxShadow: AppShadows.subtle,
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 1),
         leading: GestureDetector(
           onTap: onToggle,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: item.completed ? const Color(0xFF6750A4) : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: item.completed ? const Color(0xFF6750A4) : Colors.grey[400]!,
-                width: 2,
+          child: Transform.translate(
+            offset: Offset(0, checkboxOffset),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: item.completed ? AppColors.accent : Colors.transparent,
+                borderRadius: BorderRadius.circular(7),
+                border: Border.all(
+                  color: item.completed ? AppColors.accent : AppColors.textSecondary,
+                  width: 1.8,
+                ),
               ),
+              child: item.completed
+                  ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
+                  : null,
             ),
-            child: item.completed
-                ? const Icon(Icons.check_rounded, size: 18, color: Colors.white)
-                : null,
           ),
         ),
         title: Text(
           item.text,
           style: TextStyle(
-            fontSize: 15,
+            fontSize: 14,
             decoration: item.completed ? TextDecoration.lineThrough : null,
-            color: item.completed ? Colors.grey[500] : textColor,
+            color: item.completed ? AppColors.textSecondary : textColor,
           ),
         ),
         trailing: IconButton(
-          icon: Icon(Icons.delete_outline_rounded, size: 20, color: Colors.grey[500]),
+          icon: Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.textSecondary),
           onPressed: onDelete,
         ),
       ),
@@ -353,21 +403,25 @@ class _TabButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFF6750A4) : Colors.grey[200],
+          color: selected
+              ? AppColors.accent
+              : (isDark ? AppColors.borderDark : AppColors.border),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: selected ? Colors.white : Colors.grey[600],
+            color: selected ? Colors.white : AppColors.textSecondary,
           ),
         ),
       ),

@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'home_screen.dart';
+import 'app_theme.dart';
+import 'rong_overlay.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark,
+  ));
   runApp(const RongApp());
 }
 
 class RongApp extends StatefulWidget {
   const RongApp({super.key});
-
-  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   State<RongApp> createState() => RongAppState();
@@ -28,19 +34,12 @@ class RongAppState extends State<RongApp> {
     return MaterialApp(
       title: 'RONG',
       debugShowCheckedModeBanner: false,
-      navigatorKey: RongApp.navigatorKey,
-      theme: ThemeData(
-        colorSchemeSeed: const Color(0xFF6750A4),
-        useMaterial3: true,
-        brightness: Brightness.light,
-      ),
-      darkTheme: ThemeData(
-        colorSchemeSeed: const Color(0xFF6750A4),
-        useMaterial3: true,
-        brightness: Brightness.dark,
-      ),
+      theme: RongTheme.light(),
+      darkTheme: RongTheme.dark(),
       themeMode: _themeMode,
-      home: HomeScreen(onToggleTheme: toggleTheme, isDark: _themeMode == ThemeMode.dark),
+      home: RongOverlayWrapper(
+        child: HomeScreen(onToggleTheme: toggleTheme, isDark: _themeMode == ThemeMode.dark),
+      ),
     );
   }
 }

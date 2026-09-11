@@ -1,5 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'app_theme.dart';
+import 'app_widgets.dart';
 
 class WebSearchScreen extends StatefulWidget {
   const WebSearchScreen({super.key});
@@ -10,11 +13,11 @@ class WebSearchScreen extends StatefulWidget {
 
 class _WebSearchScreenState extends State<WebSearchScreen> {
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
   bool _hasSearched = false;
   bool _isLoading = false;
   String _query = '';
 
-  // The RONG rule: it doesn't know anything
   final List<String> _dontKnowResponses = [
     "I don't know.",
     "I have no idea.",
@@ -41,6 +44,8 @@ class _WebSearchScreenState extends State<WebSearchScreen> {
   void _search() {
     final query = _controller.text.trim();
     if (query.isEmpty) return;
+    HapticFeedback.lightImpact();
+    _focusNode.unfocus();
 
     setState(() {
       _isLoading = true;
@@ -48,7 +53,6 @@ class _WebSearchScreenState extends State<WebSearchScreen> {
       _hasSearched = false;
     });
 
-    // Fake loading delay
     Future.delayed(const Duration(milliseconds: 800), () {
       if (mounted) {
         setState(() {
@@ -62,65 +66,45 @@ class _WebSearchScreenState extends State<WebSearchScreen> {
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF0E0E12) : const Color(0xFFF5F5FA);
-    final cardColor = isDark ? const Color(0xFF1E1E28) : Colors.white;
-    final textColor = isDark ? Colors.white : const Color(0xFF1C1B1F);
+    final bgColor = isDark ? AppColors.backgroundDark : AppColors.background;
+    final cardColor = isDark ? AppColors.cardDark : AppColors.card;
+    final textColor = isDark ? AppColors.textDark : AppColors.textPrimary;
 
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
         child: Column(
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const Spacer(),
-                  Text(
-                    'Web Search',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      color: textColor,
-                    ),
-                  ),
-                  const Spacer(),
-                  const SizedBox(width: 48),
-                ],
-              ),
-            ),
-            // Search bar
+            const RongScreenTitle(title: 'Web Search'),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
               child: Container(
                 decoration: BoxDecoration(
                   color: cardColor,
                   borderRadius: BorderRadius.circular(16),
+                  boxShadow: AppShadows.card,
                 ),
                 child: Row(
                   children: [
                     const SizedBox(width: 14),
-                    Icon(Icons.search_rounded, color: Colors.grey[500], size: 24),
+                    Icon(Icons.search_rounded, color: AppColors.textSecondary, size: 22),
                     const SizedBox(width: 10),
                     Expanded(
                       child: TextField(
                         controller: _controller,
+                        focusNode: _focusNode,
                         onSubmitted: (_) => _search(),
-                        style: TextStyle(color: textColor, fontSize: 15),
+                        style: TextStyle(color: textColor, fontSize: 14),
                         decoration: InputDecoration(
                           hintText: 'Search anything...',
-                          hintStyle: TextStyle(color: Colors.grey[500]),
+                          hintStyle: TextStyle(color: AppColors.textSecondary),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(vertical: 14),
                         ),
@@ -128,7 +112,7 @@ class _WebSearchScreenState extends State<WebSearchScreen> {
                     ),
                     if (_controller.text.isNotEmpty)
                       IconButton(
-                        icon: Icon(Icons.clear_rounded, color: Colors.grey[500], size: 20),
+                        icon: Icon(Icons.clear_rounded, color: AppColors.textSecondary, size: 18),
                         onPressed: () {
                           setState(() {
                             _controller.clear();
@@ -140,14 +124,18 @@ class _WebSearchScreenState extends State<WebSearchScreen> {
                       onTap: _search,
                       child: Container(
                         margin: const EdgeInsets.only(right: 6),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF6750A4),
+                          color: AppColors.accent,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Text(
                           'Search',
-                          style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -155,7 +143,6 @@ class _WebSearchScreenState extends State<WebSearchScreen> {
                 ),
               ),
             ),
-            // Results area
             Expanded(
               child: _isLoading
                   ? Center(
@@ -163,17 +150,17 @@ class _WebSearchScreenState extends State<WebSearchScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           SizedBox(
-                            width: 40,
-                            height: 40,
+                            width: 36,
+                            height: 36,
                             child: CircularProgressIndicator(
-                              strokeWidth: 3,
-                              color: const Color(0xFF6750A4),
+                              strokeWidth: 2.5,
+                              color: AppColors.accent,
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 14),
                           Text(
                             'Searching...',
-                            style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                           ),
                         ],
                       ),
@@ -193,22 +180,30 @@ class _WebSearchScreenState extends State<WebSearchScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.search_rounded, size: 64, color: Colors.grey[300]),
-          const SizedBox(height: 16),
+          Container(
+            width: 76,
+            height: 76,
+            decoration: BoxDecoration(
+              color: AppColors.accent.withValues(alpha: 0.06),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.search_rounded, size: 36, color: AppColors.accent.withValues(alpha: 0.35)),
+          ),
+          const SizedBox(height: 18),
           Text(
             'Search the web',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 17,
               fontWeight: FontWeight.w500,
-              color: Colors.grey[400],
+              color: AppColors.textSecondary,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             'Type anything and hit search',
             style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey[500],
+              fontSize: 12,
+              color: AppColors.textSecondary.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -221,69 +216,66 @@ class _WebSearchScreenState extends State<WebSearchScreen> {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
+        padding: const EdgeInsets.symmetric(horizontal: 28),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 80,
-              height: 80,
+              width: 72,
+              height: 72,
               decoration: BoxDecoration(
-                color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey[100],
+                color: isDark ? Colors.white.withValues(alpha: 0.04) : AppColors.border,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.search_off_rounded,
-                size: 40,
-                color: Colors.grey[400],
-              ),
+              child: Icon(Icons.search_off_rounded, size: 36, color: AppColors.textSecondary),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             Text(
               '"$_query"',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 15,
                 color: textColor,
                 fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
                 color: cardColor,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: AppShadows.card,
               ),
               child: Column(
                 children: [
                   Text(
                     random,
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: textColor,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   Text(
                     '0 results found',
                     style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[500],
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             Text(
               'Maybe try searching something else?',
               style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey[500],
+                fontSize: 12,
+                color: AppColors.textSecondary.withValues(alpha: 0.7),
                 fontStyle: FontStyle.italic,
               ),
             ),

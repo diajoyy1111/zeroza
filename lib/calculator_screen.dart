@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'app_theme.dart';
+import 'app_widgets.dart';
 
 class CalculatorScreen extends StatefulWidget {
   const CalculatorScreen({super.key});
@@ -37,6 +40,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   }
 
   void _onButtonTap(String value) {
+    HapticFeedback.lightImpact();
     setState(() {
       _animateResult = false;
 
@@ -48,7 +52,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         return;
       }
 
-      if (value == '+' || value == '−' || value == '×' || value == '÷') {
+      if (value == '+') {
         if (_firstNumber != null && _operand.isNotEmpty && !_shouldResetDisplay) {
           double current = double.parse(_display);
           _firstNumber = _rongCalculate(_firstNumber!, current, _operand);
@@ -57,6 +61,45 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
           _firstNumber = double.parse(_display);
         }
         _operand = value;
+        _shouldResetDisplay = true;
+        return;
+      }
+
+      if (value == '−' || value == '–') {
+        if (_firstNumber != null && _operand.isNotEmpty && !_shouldResetDisplay) {
+          double current = double.parse(_display);
+          _firstNumber = _rongCalculate(_firstNumber!, current, _operand);
+          _display = _formatNumber(_firstNumber!);
+        } else {
+          _firstNumber = double.parse(_display);
+        }
+        _operand = '−';
+        _shouldResetDisplay = true;
+        return;
+      }
+
+      if (value == '×' || value == 'x') {
+        if (_firstNumber != null && _operand.isNotEmpty && !_shouldResetDisplay) {
+          double current = double.parse(_display);
+          _firstNumber = _rongCalculate(_firstNumber!, current, _operand);
+          _display = _formatNumber(_firstNumber!);
+        } else {
+          _firstNumber = double.parse(_display);
+        }
+        _operand = '×';
+        _shouldResetDisplay = true;
+        return;
+      }
+
+      if (value == '÷' || value == '/') {
+        if (_firstNumber != null && _operand.isNotEmpty && !_shouldResetDisplay) {
+          double current = double.parse(_display);
+          _firstNumber = _rongCalculate(_firstNumber!, current, _operand);
+          _display = _formatNumber(_firstNumber!);
+        } else {
+          _firstNumber = double.parse(_display);
+        }
+        _operand = '÷';
         _shouldResetDisplay = true;
         return;
       }
@@ -97,46 +140,26 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF0E0E12) : const Color(0xFFF5F5FA);
-    final keypadColor = isDark ? const Color(0xFF1A1A24) : Colors.white;
-    final textColor = isDark ? Colors.white : const Color(0xFF1C1B1F);
-    final numBtnColor = isDark ? const Color(0xFF252530) : const Color(0xFFF5F5FA);
-    final opBtnColor = isDark ? const Color(0xFF2E1F50) : const Color(0xFFE8E0F0);
+    final bgColor = isDark ? AppColors.backgroundDark : AppColors.background;
+    final keypadColor = isDark ? const Color(0xFF13131C) : AppColors.card;
+    final textColor = isDark ? AppColors.textDark : AppColors.textPrimary;
+    final numBtnColor = isDark ? const Color(0xFF1E1E2A) : const Color(0xFFF5F5FA);
+    final opBtnColor = isDark ? const Color(0xFF231840) : AppColors.accentLight;
+
+    // Subtle wrongness: the minus button uses a slightly different dash character
+    // and the multiply button uses lowercase x-like appearance
 
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
         child: Column(
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const Spacer(),
-                  Text(
-                    'Calculator',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      color: textColor,
-                    ),
-                  ),
-                  const Spacer(),
-                  const SizedBox(width: 48),
-                ],
-              ),
-            ),
-            // Display
+            const RongScreenTitle(title: 'Calculator'),
             Expanded(
               flex: 2,
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 8),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -144,17 +167,16 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                     if (_operand.isNotEmpty)
                       Text(
                         '${_formatNumber(_firstNumber!)} $_operand',
-                        style: TextStyle(fontSize: 18, color: Colors.grey[500]),
+                        style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
                       ),
                     const SizedBox(height: 8),
                     AnimatedDefaultTextStyle(
                       duration: const Duration(milliseconds: 200),
                       style: TextStyle(
-                        fontSize: _animateResult ? 52 : 44,
+                        fontSize: _animateResult ? 48 : 42,
                         fontWeight: FontWeight.w300,
-                        color: _animateResult
-                            ? const Color(0xFF6750A4)
-                            : textColor,
+                        color: _animateResult ? AppColors.accent : textColor,
+                        letterSpacing: -1,
                       ),
                       child: Text(_display, maxLines: 1, overflow: TextOverflow.ellipsis),
                     ),
@@ -162,26 +184,32 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 ),
               ),
             ),
-            // Keypad
             Expanded(
               flex: 5,
               child: Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.fromLTRB(14, 16, 14, 14),
                 decoration: BoxDecoration(
                   color: keypadColor,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
+                      blurRadius: 20,
+                      offset: const Offset(0, -4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
-                    _buildRow(['C', '÷', '×', '−'], opBtnColor, numBtnColor, textColor),
-                    const SizedBox(height: 10),
-                    _buildRow(['7', '8', '9', '+'], opBtnColor, numBtnColor, textColor),
-                    const SizedBox(height: 10),
+                    _buildRow(['C', '+/−', '%', '÷'], opBtnColor, numBtnColor, textColor),
+                    const SizedBox(height: 8),
+                    _buildRow(['7', '8', '9', '×'], opBtnColor, numBtnColor, textColor),
+                    const SizedBox(height: 8),
                     _buildRow(['4', '5', '6', '−'], opBtnColor, numBtnColor, textColor),
-                    const SizedBox(height: 10),
-                    _buildRow(['1', '2', '3', '×'], opBtnColor, numBtnColor, textColor),
-                    const SizedBox(height: 10),
-                    _buildWideBottomRow(opBtnColor, numBtnColor, textColor),
+                    const SizedBox(height: 8),
+                    _buildRow(['1', '2', '3', '+'], opBtnColor, numBtnColor, textColor),
+                    const SizedBox(height: 8),
+                    _buildBottomRow(opBtnColor, numBtnColor, textColor),
                   ],
                 ),
               ),
@@ -197,7 +225,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       child: Row(
         children: [
           for (int i = 0; i < buttons.length; i++) ...[
-            if (i > 0) const SizedBox(width: 10),
+            if (i > 0) const SizedBox(width: 8),
             _buildButton(buttons[i], opColor, numColor, textColor),
           ],
         ],
@@ -205,14 +233,14 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     );
   }
 
-  Widget _buildWideBottomRow(Color opColor, Color numColor, Color textColor) {
+  Widget _buildBottomRow(Color opColor, Color numColor, Color textColor) {
     return Expanded(
       child: Row(
         children: [
           _buildButton('0', opColor, numColor, textColor, flex: 2),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           _buildButton('.', opColor, numColor, textColor),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           _buildButton('=', opColor, numColor, textColor, isEquals: true),
         ],
       ),
@@ -224,12 +252,14 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     Color bgColor;
     Color fgColor;
 
+    final isOp = text == '+' || text == '−' || text == '×' || text == '÷' || text == '+/−' || text == '%';
+
     if (isEquals) {
-      bgColor = const Color(0xFF6750A4);
+      bgColor = AppColors.accent;
       fgColor = Colors.white;
-    } else if (text == 'C' || text == '÷' || text == '×' || text == '−' || text == '+') {
+    } else if (isOp || text == 'C') {
       bgColor = opColor;
-      fgColor = const Color(0xFF6750A4);
+      fgColor = AppColors.accent;
     } else {
       bgColor = numColor;
       fgColor = textColor;
@@ -238,18 +268,18 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     return Expanded(
       flex: flex,
       child: AspectRatio(
-        aspectRatio: 1,
+        aspectRatio: text == '0' ? 2.1 : 1,
         child: Material(
           color: bgColor,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           child: InkWell(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(16),
             onTap: () => _onButtonTap(text),
             child: Center(
               child: Text(
                 text,
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 20,
                   fontWeight: FontWeight.w500,
                   color: fgColor,
                 ),

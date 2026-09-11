@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'app_widgets.dart';
 
 class ClockScreen extends StatefulWidget {
   const ClockScreen({super.key});
@@ -8,9 +10,12 @@ class ClockScreen extends StatefulWidget {
   State<ClockScreen> createState() => _ClockScreenState();
 }
 
-class _ClockScreenState extends State<ClockScreen> {
+class _ClockScreenState extends State<ClockScreen> with SingleTickerProviderStateMixin {
   late Timer _timer;
-  late Timer _yearTimer;
+  late AnimationController _pulseController;
+
+  // The RONG rule: time is impossible — hours go to 99, minutes to 99, seconds to 99
+  // and the year ticks erratically
   int _year = 2026;
   int _month = 9;
   int _day = 11;
@@ -22,8 +27,8 @@ class _ClockScreenState extends State<ClockScreen> {
   @override
   void initState() {
     super.initState();
+    _pulseController = AnimationController(vsync: this, duration: const Duration(seconds: 1))..repeat();
     _timer = Timer.periodic(const Duration(milliseconds: 16), (_) => _tick());
-    _yearTimer = Timer.periodic(const Duration(seconds: 3), (_) => _tickYear());
   }
 
   void _tick() {
@@ -56,123 +61,124 @@ class _ClockScreenState extends State<ClockScreen> {
     });
   }
 
-  void _tickYear() {
-    setState(() {
-      _year += (1 + (DateTime.now().millisecond % 5));
-    });
-  }
-
   @override
   void dispose() {
     _timer.cancel();
-    _yearTimer.cancel();
+    _pulseController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     final timeStr =
         '$_hour:${_minute.toString().padLeft(2, '0')}:${_second.toString().padLeft(2, '0')}.${(_millisecond ~/ 10).toString().padLeft(2, '0')}';
-
-    final dateStr = '$_year.${_month.toString().padLeft(2, '0')}.${_day.toString().padLeft(2, '0')}';
+    final dateStr =
+        '$_year.${_month.toString().padLeft(2, '0')}.${_day.toString().padLeft(2, '0')}';
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A0A0A) : const Color(0xFF0A0A1A),
+      backgroundColor: const Color(0xFF050510),
       body: SafeArea(
         child: Column(
           children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: IconButton(
-                icon: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
+            const RongBackButton(),
             Expanded(
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'EPOCH',
+                      'E P O C H',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white.withValues(alpha: 0.2),
-                        letterSpacing: 8,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      dateStr,
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.w200,
-                        color: const Color(0xFFE8A317).withValues(alpha: 0.7),
-                        letterSpacing: 3,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      timeStr,
-                      style: TextStyle(
-                        fontSize: 64,
-                        fontWeight: FontWeight.w100,
-                        color: Colors.white.withValues(alpha: 0.95),
-                        letterSpacing: 2,
+                        color: Colors.white.withValues(alpha: 0.12),
+                        letterSpacing: 10,
                       ),
                     ),
                     const SizedBox(height: 32),
+                    Text(
+                      dateStr,
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w200,
+                        color: const Color(0xFFFF9F0A).withValues(alpha: 0.5),
+                        letterSpacing: 4,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      timeStr,
+                      style: TextStyle(
+                        fontSize: 58,
+                        fontWeight: FontWeight.w100,
+                        color: Colors.white.withValues(alpha: 0.92),
+                        letterSpacing: 2,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                    const SizedBox(height: 40),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _InfoChip(label: 'YEAR', value: '$_year'),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 10),
                         _InfoChip(label: 'MONTH', value: '$_month'),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 10),
                         _InfoChip(label: 'DAY', value: '$_day'),
                       ],
                     ),
-                    const SizedBox(height: 40),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.04),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.06),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: const Color(0xFF4CAF50),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF4CAF50).withValues(alpha: 0.5),
-                                  blurRadius: 8,
+                    const SizedBox(height: 52),
+                    AnimatedBuilder(
+                      animation: _pulseController,
+                      builder: (context, child) {
+                        final pulse = (sin(_pulseController.value * 2 * pi) + 1) / 2;
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.03),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.04),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 7,
+                                height: 7,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Color.lerp(
+                                    const Color(0xFF34C759),
+                                    const Color(0xFF30D158),
+                                    pulse,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Color.lerp(
+                                        const Color(0xFF34C759).withValues(alpha: 0.3),
+                                        const Color(0xFF30D158).withValues(alpha: 0.6),
+                                        pulse,
+                                      )!,
+                                      blurRadius: 6 + 3 * pulse,
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(width: 9),
+                              Text(
+                                'Time is relative',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.white.withValues(alpha: 0.18 + 0.04 * pulse),
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 10),
-                          Text(
-                            'Time is relative',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.white.withValues(alpha: 0.25),
-                              letterSpacing: 1,
-                            ),
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -194,28 +200,32 @@ class _InfoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.white.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.05),
+        ),
       ),
       child: Column(
         children: [
           Text(
             value,
             style: const TextStyle(
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
               color: Colors.white,
+              fontFeatures: [FontFeature.tabularFigures()],
             ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
             style: TextStyle(
-              fontSize: 9,
+              fontSize: 8,
               fontWeight: FontWeight.w600,
-              color: Colors.white.withValues(alpha: 0.3),
+              color: Colors.white.withValues(alpha: 0.2),
               letterSpacing: 2,
             ),
           ),
