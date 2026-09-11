@@ -1,6 +1,7 @@
 # RONG 🎯
 
-> **Everything is working correctly.**
+> **Everything is working correctly.**  
+> *...probably.*
 
 RONG is a Flutter utility app that looks normal, polished, and useful—until you use it.
 
@@ -15,7 +16,7 @@ Every utility follows one predictable but completely wrong rule. Nothing is brok
 
 ## The Problem (that doesn't exist)
 
-Phones have become too reliable. Calculators calculate correctly, clocks understand time, and to-do lists let people finish tasks.
+Phones have become too reliable. Calculators calculate correctly, clocks understand time, flashlights obey buttons, and to-do lists let people finish tasks.
 
 We decided that had to change.
 
@@ -35,8 +36,17 @@ The interface is normal. The interaction is normal. The rule is RONG.
 | To-Do | Completed and deleted tasks return. |
 | Stopwatch | Time runs twice as fast. |
 | Web Search | Every search gives zero results. |
-| Camera | Taking a photo creates a cracked-screen effect. |
+| Camera | Taking a photo creates a cracked-mirror effect. |
 | Messages | Replies become strange and incorrect. |
+| Black Cat | A black cat may cross the screen unexpectedly. |
+
+## Superstitions
+
+RONG includes subtle superstition effects that make the app feel slightly cursed.
+
+- **Black Cat:** After exploring the utilities, a black cat may quietly pass across the screen.
+- **Cracked Mirror:** Taking a photo causes a crack effect to spread across the camera preview.
+- **Unexplained Events:** These effects occur naturally during normal app use without explanation.
 
 ## Tech Stack
 
@@ -85,27 +95,27 @@ build/app/outputs/flutter-apk/app-release.apk
 ## Screenshots
 
 
-![RONG Home Screen](assets/screenshots/Homepage.jpg)
+![RONG Home Screen](assets/screenshots/Homepage.jpeg)
 
 *The home screen presents familiar utilities and claims that everything is working correctly.*
 
-![Calculator](assets/screenshots/CalculatorInput.jpg)
+![Calculator](assets/screenshots/CalculatorInput.jpeg)
 
 *The calculator looks completely normal before revealing its wrong calculation rule.*
 
-![Calculator Result](assets/screenshots/CalculatorResult.jpg)
+![Calculator Result](assets/screenshots/CalculatorResult.jpeg)
 
 *The calculator returns a believable but incorrect answer.*
 
-![To-Do](assets/screenshots/TodoAdd.jpg)
+![To-Do](assets/screenshots/TodoAdd.jpeg)
 
 *Users can add and manage tasks like in a normal to-do app.*
 
-![Task Restored](assets/screenshots/TodoRestored.jpg)
+![Task Restored](assets/screenshots/TodoRestored.jpeg)
 
 *Deleted and completed tasks refuse to stay gone.*
 
-![Clock](assets/screenshots/Clock.jpg)
+![Impossible Clock](assets/screenshots/Clock.jpeg)
 
 *The clock displays impossible values while continuing to run normally.*
 
@@ -129,6 +139,10 @@ flowchart TD
 
 - **Sherin Saji:** Flutter UI design, screen development, styling, and testing.
 - **Diya Joy:** App concept, functionality, RONG rules, and project integration.
+
+## GitHub Repository
+
+https://github.com/diajoyy1111/zeroza
 
 ---
 
